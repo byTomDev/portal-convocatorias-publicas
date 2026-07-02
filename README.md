@@ -35,9 +35,31 @@ La aplicación estará disponible en:
 portal-convocatorias-publicas/
 ├── apps/
 │   ├── backend/      # API FastAPI
+│   │   ├── app/
+│   │   │   ├── core/       # Config y seguridad
+│   │   │   ├── database/   # Modelos y sesión
+│   │   │   ├── modules/    # Dominios (auth, users, bookmarks, procurements)
+│   │   │   └── shared/     # Excepciones compartidas
+│   │   └── tests/          # Pruebas de integración
 │   └── frontend/    # Aplicación React
 ├── docker/          # Configuración de Docker
 ├── docker-compose.yml
 ├── README.md
 └── .env
 ```
+
+## Pruebas
+
+Las pruebas son de integración con `httpx.AsyncClient` contra la app FastAPI real, usando SQLite en memoria para isolation.
+
+```bash
+# Dentro del contenedor backend
+docker compose exec backend python -m pytest tests/ -v
+```
+
+**Cobertura actual:**
+
+| Endpoint | Tests |
+|----------|-------|
+| `GET /health` | 1 |
+| `POST /auth/register` | 5 |
