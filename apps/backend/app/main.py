@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app.database.models import Base
 from app.database.session import engine
 from app.modules.auth import router as auth_router
+from app.modules.bookmarks import router as bookmarks_router
 from app.modules.procurements import router as procurements_router
 from app.shared.exceptions import AppException
 
@@ -30,6 +31,7 @@ async def app_exception_handler(request: Request, exc: AppException):
 
 
 app.include_router(auth_router)
+app.include_router(bookmarks_router)
 app.include_router(procurements_router)
 
 

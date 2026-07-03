@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 
 from app.database.models import Base
 from app.main import app
-from app.modules.auth import get_db as auth_get_db
+from app.modules.auth import get_db as auth_get_db, hash_password
+from app.database.models import User
 
 # Per-test in-memory SQLite engine + session maker
 _test_engine = None
@@ -43,3 +44,20 @@ async def client():
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def user_token(client):
+    await client.post(
+        "/auth/register",
+        json={
+            "email": "test@example.com",
+            "password": "password123",
+            "confirm_password": "password123",
+        },
+    )
+    login_resp = await client.post(
+        "/auth/login",
+        json={"email": "test@example.com", "password": "password123"},
+    )
+    return login_resp.json()["access_token"]
