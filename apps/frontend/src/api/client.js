@@ -31,4 +31,6 @@ export const saveBookmark = (procurementData) =>
 
 export const getBookmarks = () => api.get('/bookmarks').then((r) => r.data)
 
+export const deleteBookmark = (id) => api.delete(`/bookmarks/${id}`).then((r) => r.data)
+
 export default api

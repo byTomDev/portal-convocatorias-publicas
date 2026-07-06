@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getMe } from '../api/client'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
+  const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(() => localStorage.getItem('access_token'))
   const [loading, setLoading] = useState(false)
@@ -38,6 +40,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('access_token')
     setToken(null)
     setUser(null)
+    navigate('/')
   }
 
   return (
