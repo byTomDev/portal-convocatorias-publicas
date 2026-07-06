@@ -2,10 +2,16 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getBookmarks } from '../api/client'
 
+const formatCurrency = (val) => {
+  if (!val) return '—'
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(Number(val))
+}
+
 export default function BookmarksPage() {
   const [bookmarks, setBookmarks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
     getBookmarks()
@@ -19,6 +25,9 @@ export default function BookmarksPage() {
       })
   }, [])
 
+  const handleOpen = (b) => setSelected(b.procurement)
+  const handleClose = () => setSelected(null)
+
   return (
     <div className="page">
       <header className="header-bar">
@@ -31,7 +40,7 @@ export default function BookmarksPage() {
             <span>Portal de Convocatorias</span>
           </div>
           <nav className="header-nav">
-            <Link to="/home" className="btn-outline">Inicio</Link>
+            <Link to="/home" className="btn-primary">Regresar a inicio</Link>
             <Link to="/procurements" className="btn-outline">Buscar</Link>
           </nav>
         </div>
@@ -68,8 +77,10 @@ export default function BookmarksPage() {
             <p className="results-count">{bookmarks.length} favorito{bookmarks.length !== 1 ? 's' : ''}</p>
             <ul className="procurement-list">
               {bookmarks.map((b) => (
-                <li key={b.id} className="procurement-item">
-                  <div className="procurement-name">{b.procurement?.nombre_del_procedimiento || b.referencia_del_proceso || 'Sin nombre'}</div>
+                <li key={b.id} className="procurement-item" onClick={() => handleOpen(b)}>
+                  <div className="procurement-name">
+                    {b.procurement?.nombre_del_procedimiento || b.referencia_del_proceso || 'Sin nombre'}
+                  </div>
                   <div className="procurement-meta">
                     <span>{b.procurement?.entidad || '—'}</span>
                     <span>•</span>
@@ -77,23 +88,77 @@ export default function BookmarksPage() {
                     <span>•</span>
                     <span>{b.procurement?.estado_del_procedimiento || '—'}</span>
                   </div>
-                  {b.procurement?.url_proceso && (
-                    <a
-                      href={b.procurement.url_proceso}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="procurement-link"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Ver proceso →
-                    </a>
-                  )}
                 </li>
               ))}
             </ul>
           </div>
         )}
       </main>
+
+      {selected && (
+        <div className="modal-overlay" onClick={handleClose}>
+          <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">{selected.nombre_del_procedimiento || 'Detalle de convocatoria'}</h2>
+            <div className="modal-fields">
+              <div className="modal-field">
+                <span className="modal-field-label">Entidad</span>
+                <span className="modal-field-value">{selected.entidad || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Referencia</span>
+                <span className="modal-field-value">{selected.referencia_del_proceso || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Estado</span>
+                <span className="modal-field-value">{selected.estado_del_procedimiento || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Fecha de publicación</span>
+                <span className="modal-field-value">
+                  {selected.fecha_de_publicacion_del?.split('T')[0] || '—'}
+                </span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Modalidad</span>
+                <span className="modal-field-value">{selected.modalidad_de_contratacion || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Precio base</span>
+                <span className="modal-field-value">{formatCurrency(selected.precio_base)}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Tipo de contrato</span>
+                <span className="modal-field-value">{selected.tipo_de_contrato || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Departamento</span>
+                <span className="modal-field-value">{selected.departamento_entidad || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Ciudad</span>
+                <span className="modal-field-value">{selected.ciudad_entidad || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">ID del proceso</span>
+                <span className="modal-field-value">{selected.id_del_proceso || '—'}</span>
+              </div>
+            </div>
+            <div className="modal-actions">
+              {selected.url_proceso && (
+                <a
+                  href={selected.url_proceso}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                >
+                  Revisar proceso →
+                </a>
+              )}
+              <button className="btn-secondary" onClick={handleClose}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
