@@ -1,19 +1,31 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { getMe } from '../api/client'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(() => localStorage.getItem('access_token'))
+  const [loading, setLoading] = useState(false)
 
   const isAuthenticated = !!token
 
-  // TODO: fetch /auth/me on mount to rehydrate user session
   useEffect(() => {
-    if (token) {
-      // placeholder — will be replaced when LoginPage connects to backend
-      setUser({ email: '' })
-    }
+    if (!token) return
+
+    setLoading(true)
+    getMe()
+      .then((userData) => {
+        setUser(userData)
+      })
+      .catch(() => {
+        localStorage.removeItem('access_token')
+        setToken(null)
+        setUser(null)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }, [token])
 
   const login = ({ access_token, user: userData }) => {
@@ -29,7 +41,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )

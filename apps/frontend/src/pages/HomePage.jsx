@@ -5,7 +5,7 @@ export default function HomePage() {
   const { user, logout } = useAuth()
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="page">
       <h1>Portal de Convocatorias Públicas</h1>
       <p>Bienvenido{user?.email ? `, ${user.email}` : ''}</p>
       <nav>

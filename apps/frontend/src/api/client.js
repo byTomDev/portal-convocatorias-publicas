@@ -21,4 +21,6 @@ export const login = (email, password) =>
 export const register = (email, password, confirmPassword) =>
   api.post('/auth/register', { email, password, confirm_password: confirmPassword }).then((r) => r.data)
 
+export const getMe = () => api.get('/auth/me').then((r) => r.data)
+
 export default api
