@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import HomePage from './pages/HomePage'
 import ProcurementsPage from './pages/ProcurementsPage'
+import BookmarksPage from './pages/BookmarksPage'
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ProcurementsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/favoritos"
+            element={
+              <PrivateRoute>
+                <BookmarksPage />
               </PrivateRoute>
             }
           />

@@ -29,4 +29,6 @@ export const getProcurements = ({ entity, status, start_date, end_date, limit, o
 export const saveBookmark = (procurementData) =>
   api.post('/bookmarks', { procurement_data: procurementData }).then((r) => r.data)
 
+export const getBookmarks = () => api.get('/bookmarks').then((r) => r.data)
+
 export default api
