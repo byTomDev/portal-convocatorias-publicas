@@ -47,7 +47,13 @@ export default function BookmarksPage() {
       </header>
 
       <main className="main-content">
-        <h1 className="page-title">Mis favoritos</h1>
+        <div className="page-header">
+          <h1 className="page-title">Mis favoritos</h1>
+          <div className="page-header-nav">
+            <Link to="/home" className="btn-outline">Regresar a inicio</Link>
+            <Link to="/procurements" className="btn-primary">Buscar convocatorias</Link>
+          </div>
+        </div>
 
         {loading && (
           <div className="loading-state">
