@@ -499,3 +499,7 @@ button.btn-outline:hover:not(:disabled) {
   gap: 0.75rem;
   justify-content: flex-end;
 }
+
+.text-success { color: #16a34a; }
+.text-warning { color: #d97706; }
+.text-error { color: #dc2626; }
