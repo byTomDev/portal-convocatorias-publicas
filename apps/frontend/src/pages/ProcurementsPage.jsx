@@ -138,7 +138,7 @@ export default function ProcurementsPage() {
   const handleCloseDetail = () => setSelectedProcurement(null)
 
   useEffect(() => {
-    if (saveState === 'saved' || saveState === 'already') {
+    if (saveState === 'saved' || saveState === 'already' || saveState === 'error') {
       const timer = setTimeout(() => setSaveState('idle'), 3000)
       return () => clearTimeout(timer)
     }
@@ -379,17 +379,18 @@ export default function ProcurementsPage() {
               </button>
               <button className="btn-secondary" onClick={handleCloseDetail}>Cerrar</button>
             </div>
-            {saveState === 'saved' && (
-              <p className="text-success text-center" style={{ marginTop: '0.5rem' }}>Convocatoria guardada en favoritos.</p>
-            )}
-            {saveState === 'already' && (
-              <p className="text-warning text-center" style={{ marginTop: '0.5rem' }}>Esta convocatoria ya está en tus favoritos.</p>
-            )}
-            {saveState === 'error' && (
-              <p className="text-error text-center" style={{ marginTop: '0.5rem' }}>No se pudo guardar. Intenta de nuevo.</p>
-            )}
           </div>
         </div>
+      )}
+
+      {saveState === 'saved' && (
+        <div className="toast toast--success">✅ Convocatoria guardada en favoritos.</div>
+      )}
+      {saveState === 'already' && (
+        <div className="toast toast--warning">⚠️ Esta convocatoria ya está en tus favoritos.</div>
+      )}
+      {saveState === 'error' && (
+        <div className="toast toast--error">❌ No se pudo guardar. Intenta de nuevo.</div>
       )}
     </div>
   )
