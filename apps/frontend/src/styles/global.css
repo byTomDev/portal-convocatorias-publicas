@@ -370,14 +370,17 @@ button.btn-outline:hover:not(:disabled) {
   justify-content: flex-end;
 }
 
-.load-more-container {
+.pagination {
   margin-top: 1.5rem;
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 1rem;
 }
 
-.no-more-results {
-  margin-top: 1rem;
+.pagination-info {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
 }
 
 .results-count {

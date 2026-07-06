@@ -13,10 +13,10 @@ export default function ProcurementsPage() {
   })
   const [procurements, setProcurements] = useState([])
   const [loading, setLoading] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasNext, setHasNext] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -28,7 +28,7 @@ export default function ProcurementsPage() {
     setError('')
     setSearched(true)
     setLoading(true)
-    setHasMore(true)
+    setCurrentPage(1)
 
     const params = {
       limit: 10,
@@ -42,7 +42,7 @@ export default function ProcurementsPage() {
     getProcurements(params)
       .then((data) => {
         setProcurements(data)
-        setHasMore(data.length === 10)
+        setHasNext(data.length === 10)
       })
       .catch(() => {
         setError('No se pudieron cargar las convocatorias. Intenta de nuevo.')
@@ -58,16 +58,15 @@ export default function ProcurementsPage() {
     setProcurements([])
     setError('')
     setSearched(false)
-    setHasMore(true)
+    setCurrentPage(1)
+    setHasNext(false)
   }
 
-  const handleLoadMore = () => {
-    setLoadingMore(true)
-    const currentOffset = procurements.length
-
+  const fetchPage = (page) => {
+    setLoading(true)
     const params = {
       limit: 10,
-      offset: currentOffset,
+      offset: (page - 1) * 10,
     }
     if (filters.entity) params.entity = filters.entity
     if (filters.status) params.status = filters.status
@@ -76,15 +75,24 @@ export default function ProcurementsPage() {
 
     getProcurements(params)
       .then((data) => {
-        setProcurements((prev) => [...prev, ...data])
-        setHasMore(data.length === 10)
+        setProcurements(data)
+        setCurrentPage(page)
+        setHasNext(data.length === 10)
       })
       .catch(() => {
-        setError('No se pudieron cargar más convocatorias.')
+        setError('No se pudieron cargar las convocatorias.')
       })
       .finally(() => {
-        setLoadingMore(false)
+        setLoading(false)
       })
+  }
+
+  const handlePrev = () => {
+    if (currentPage > 1) fetchPage(currentPage - 1)
+  }
+
+  const handleNext = () => {
+    fetchPage(currentPage + 1)
   }
 
   return (
@@ -208,21 +216,25 @@ export default function ProcurementsPage() {
                 ))}
               </ul>
 
-              {hasMore ? (
-                <div className="load-more-container">
+              {hasNext || currentPage > 1 ? (
+                <div className="pagination">
                   <button
                     className="btn-secondary"
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
+                    onClick={handlePrev}
+                    disabled={loading || currentPage === 1}
                   >
-                    {loadingMore ? 'Cargando...' : 'Cargar más'}
+                    ← Anterior
+                  </button>
+                  <span className="pagination-info">Página {currentPage}</span>
+                  <button
+                    className="btn-secondary"
+                    onClick={handleNext}
+                    disabled={loading || !hasNext}
+                  >
+                    Siguiente →
                   </button>
                 </div>
-              ) : (
-                <p className="text-muted text-center no-more-results">
-                  No hay más resultados
-                </p>
-              )}
+              ) : null}
             </>
           )}
         </section>
