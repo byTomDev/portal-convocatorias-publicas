@@ -8,15 +8,17 @@ const formatCurrency = (val) => {
 }
 
 export default function BookmarksPage() {
-  const [bookmarks, setBookmarks] = useState([])
+  const [allBookmarks, setAllBookmarks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const PAGE_SIZE = 10
 
   useEffect(() => {
     getBookmarks()
       .then((data) => {
-        setBookmarks(data)
+        setAllBookmarks(data)
         setLoading(false)
       })
       .catch(() => {
@@ -24,6 +26,10 @@ export default function BookmarksPage() {
         setLoading(false)
       })
   }, [])
+
+  const totalPages = Math.max(1, Math.ceil(allBookmarks.length / PAGE_SIZE))
+  const safePage = Math.min(currentPage, totalPages)
+  const bookmarks = allBookmarks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
   const handleOpen = (b) => setSelected(b.procurement)
   const handleClose = () => setSelected(null)
@@ -80,7 +86,9 @@ export default function BookmarksPage() {
 
         {!loading && !error && bookmarks.length > 0 && (
           <div className="results-list-container">
-            <p className="results-count">{bookmarks.length} favorito{bookmarks.length !== 1 ? 's' : ''}</p>
+            <p className="results-count">
+              Mostrando {bookmarks.length} de {allBookmarks.length} favorito{allBookmarks.length !== 1 ? 's' : ''} — Página {safePage} de {totalPages}
+            </p>
             <ul className="procurement-list">
               {bookmarks.map((b) => (
                 <li key={b.id} className="procurement-item" onClick={() => handleOpen(b)}>
@@ -97,6 +105,25 @@ export default function BookmarksPage() {
                 </li>
               ))}
             </ul>
+            {totalPages > 1 && (
+              <div className="pagination-bar">
+                <button
+                  className="btn-outline"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  ← Anterior
+                </button>
+                <span className="pagination-info">Página {safePage} de {totalPages}</span>
+                <button
+                  className="btn-outline"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  Siguiente →
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
