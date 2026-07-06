@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getProcurements } from '../api/client'
+import { getProcurements, saveBookmark } from '../api/client'
 
 export default function ProcurementsPage() {
   const { user, logout } = useAuth()
@@ -20,6 +20,7 @@ export default function ProcurementsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [hasNext, setHasNext] = useState(false)
   const [selectedProcurement, setSelectedProcurement] = useState(null)
+  const [saveState, setSaveState] = useState('idle') // idle | saving | saved | already | error
 
   useEffect(() => {
     if (procurements.length > 0) {
@@ -130,8 +131,24 @@ export default function ProcurementsPage() {
     fetchPage(currentPage + 1)
   }
 
-  const handleOpenDetail = (p) => setSelectedProcurement(p)
+  const handleOpenDetail = (p) => {
+    setSelectedProcurement(p)
+    setSaveState('idle')
+  }
   const handleCloseDetail = () => setSelectedProcurement(null)
+
+  const handleSaveFavorite = () => {
+    setSaveState('saving')
+    saveBookmark(selectedProcurement)
+      .then(() => setSaveState('saved'))
+      .catch((err) => {
+        if (err?.response?.status === 409) {
+          setSaveState('already')
+        } else {
+          setSaveState('error')
+        }
+      })
+  }
 
   const formatCurrency = (val) => {
     if (!val) return '—'
@@ -346,9 +363,20 @@ export default function ProcurementsPage() {
               </div>
             </div>
             <div className="modal-actions">
-              <button className="btn-primary" disabled>Guardar favorito</button>
+              <button
+                className="btn-primary"
+                onClick={handleSaveFavorite}
+                disabled={saveState === 'saving' || saveState === 'saved' || saveState === 'already'}
+              >
+                {saveState === 'saving' ? 'Guardando...' : saveState === 'saved' ? '✓ Guardado' : saveState === 'already' ? 'Ya está en favoritos' : 'Guardar favorito'}
+              </button>
               <button className="btn-secondary" onClick={handleCloseDetail}>Cerrar</button>
             </div>
+            {saveState === 'error' && (
+              <p className="text-error text-center" style={{ marginTop: '0.5rem' }}>
+                No se pudo guardar. Intenta de nuevo.
+              </p>
+            )}
           </div>
         </div>
       )}
