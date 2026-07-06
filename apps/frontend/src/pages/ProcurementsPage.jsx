@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getProcurements } from '../api/client'
@@ -20,7 +20,11 @@ export default function ProcurementsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [hasNext, setHasNext] = useState(false)
 
-  const getArrow = () => sortDir === 'asc' ? ' ↑' : ' ↓'
+  useEffect(() => {
+    if (procurements.length > 0) {
+      setProcurements((prev) => applySort(prev))
+    }
+  }, [sortBy, sortDir])
 
   const applySort = (data) => {
     return [...data].sort((a, b) => {
@@ -239,13 +243,13 @@ export default function ProcurementsPage() {
                     className={`sort-btn${sortBy === 'entidad' ? ' sort-btn--active' : ''}`}
                     onClick={() => handleSortToggle('entidad')}
                   >
-                    Entidad{sortBy === 'entidad' && getArrow()}
+                    Entidad{sortBy === 'entidad' && (sortDir === 'asc' ? ' ↑' : ' ↓')}
                   </button>
                   <button
                     className={`sort-btn${sortBy === 'fecha' ? ' sort-btn--active' : ''}`}
                     onClick={() => handleSortToggle('fecha')}
                   >
-                    Fecha{sortBy === 'fecha' && getArrow()}
+                    Fecha{sortBy === 'fecha' && (sortDir === 'asc' ? ' ↑' : ' ↓')}
                   </button>
                 </div>
               </div>
