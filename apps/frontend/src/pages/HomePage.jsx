@@ -1,8 +1,26 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { getProcurements } from '../api/client'
 
 export default function HomePage() {
   const { user, logout } = useAuth()
+  const [procurements, setProcurements] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    getProcurements(10, 0)
+      .then((data) => {
+        setProcurements(data)
+      })
+      .catch(() => {
+        setError('No se pudieron cargar las convocatorias.')
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [])
 
   return (
     <div className="page" style={{ padding: 0 }}>
@@ -53,6 +71,32 @@ export default function HomePage() {
             <Link to="/bookmarks" className="btn-primary">Ver favoritos</Link>
           </div>
         </div>
+
+        <section className="results-section">
+          <h3 className="section-title">Convocatorias recientes</h3>
+
+          {loading && <p className="text-muted text-center">Cargando convocatorias...</p>}
+
+          {error && <p className="text-error text-center">{error}</p>}
+
+          {!loading && !error && procurements.length === 0 && (
+            <p className="text-muted text-center">No hay convocatorias disponibles.</p>
+          )}
+
+          {!loading && !error && procurements.length > 0 && (
+            <ul className="procurement-list">
+              {procurements.map((p) => (
+                <li key={p.external_id} className="procurement-item">
+                  <div className="procurement-name">{p.procedure_name}</div>
+                  <div className="procurement-meta">
+                    <span>{p.entity}</span>
+                    <span>{p.publication_date?.split('T')[0]}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </main>
     </div>
   )

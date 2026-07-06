@@ -255,3 +255,43 @@ button.btn-outline:hover:not(:disabled) {
   margin-top: 0.5rem;
   width: 100%;
 }
+
+/* ─── Results section ─── */
+.results-section {
+  margin-top: 2.5rem;
+}
+
+.section-title {
+  margin-bottom: 1rem;
+  color: var(--color-primary);
+}
+
+.procurement-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.procurement-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.procurement-name {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+}
+
+.procurement-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
