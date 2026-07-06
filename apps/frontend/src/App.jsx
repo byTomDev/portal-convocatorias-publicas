@@ -33,7 +33,7 @@ function App() {
             }
           />
           <Route
-            path="/favoritos"
+            path="/bookmarks"
             element={
               <PrivateRoute>
                 <BookmarksPage />
