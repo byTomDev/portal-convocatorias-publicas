@@ -56,7 +56,7 @@ async def test_procurements_empty_response(client, user_token):
 
 
 @pytest.mark.asyncio
-async def test_procurements_external_error_returns_empty_list(client, user_token):
+async def test_procurements_external_error_returns_502(client, user_token):
     with patch("httpx.AsyncClient") as mock_client:
         mock_instance = AsyncMock()
         mock_instance.get.return_value = MagicMock(status_code=500, json=lambda: [])
@@ -68,8 +68,7 @@ async def test_procurements_external_error_returns_empty_list(client, user_token
             headers={"Authorization": f"Bearer {user_token}"},
         )
 
-    assert response.status_code == 200
-    assert response.json() == []
+    assert response.status_code == 502
 
 
 @pytest.mark.asyncio

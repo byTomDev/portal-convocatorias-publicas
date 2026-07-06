@@ -1,5 +1,5 @@
 import httpx
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.core.config import settings
 from app.modules.auth import get_current_user, get_db
@@ -43,6 +43,6 @@ async def list_procurements(
         response = await client.get(settings.DATOS_GOV_API_URL, params=params)
 
     if response.status_code != 200:
-        return []
+        raise HTTPException(status_code=502, detail="External service error")
 
     return response.json()
