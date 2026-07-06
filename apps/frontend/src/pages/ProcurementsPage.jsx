@@ -107,10 +107,15 @@ export default function ProcurementsPage() {
                 onChange={handleChange}
               >
                 <option value="">Todos</option>
+                <option value="Seleccionado">Seleccionado</option>
                 <option value="Publicado">Publicado</option>
-                <option value="Cerrado">Cerrado</option>
-                <option value="Adjudicado">Adjudicado</option>
+                <option value="Evaluación">Evaluación</option>
                 <option value="Cancelado">Cancelado</option>
+                <option value="Borrador">Borrador</option>
+                <option value="Abierto">Abierto</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="En aprobación">En aprobación</option>
+                <option value="Suspendido">Suspendido</option>
               </select>
             </div>
 
@@ -161,12 +166,12 @@ export default function ProcurementsPage() {
               <p className="results-count">{procurements.length} resultado{procurements.length !== 1 ? 's' : ''}</p>
               <ul className="procurement-list">
                 {procurements.map((p) => (
-                  <li key={p.external_id} className="procurement-item">
-                    <div className="procurement-name">{p.procedure_name}</div>
+                  <li key={p.id_del_proceso} className="procurement-item">
+                    <div className="procurement-name">{p.nombre_del_procedimiento}</div>
                     <div className="procurement-meta">
-                      <span>{p.entity}</span>
-                      <span>{p.publication_date?.split('T')[0]}</span>
-                      <span className="status-badge">{p.procedure_status}</span>
+                      <span>{p.entidad}</span>
+                      <span>{p.fecha_de_publicacion_del?.split('T')[0]}</span>
+                      <span className="status-badge">{p.estado_del_procedimiento}</span>
                     </div>
                   </li>
                 ))}
