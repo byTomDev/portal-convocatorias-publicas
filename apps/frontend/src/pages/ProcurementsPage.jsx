@@ -15,43 +15,42 @@ export default function ProcurementsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
-  const [sortField, setSortField] = useState('fecha_desc')
+  const [sortBy, setSortBy] = useState('fecha')
+  const [sortDir, setSortDir] = useState('desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [hasNext, setHasNext] = useState(false)
 
-  const sortOptions = [
-    { value: 'fecha_desc', label: 'Fecha (recientes)' },
-    { value: 'fecha_asc', label: 'Fecha (antiguos)' },
-    { value: 'entidad_asc', label: 'Entidad (A-Z)' },
-    { value: 'entidad_desc', label: 'Entidad (Z-A)' },
-  ]
+  const getArrow = () => sortDir === 'asc' ? ' ↑' : ' ↓'
 
   const applySort = (data) => {
     return [...data].sort((a, b) => {
-      if (sortField === 'fecha_desc') {
-        return new Date(b.fecha_de_publicacion_del) - new Date(a.fecha_de_publicacion_del)
+      if (sortBy === 'fecha') {
+        return sortDir === 'desc'
+          ? new Date(b.fecha_de_publicacion_del) - new Date(a.fecha_de_publicacion_del)
+          : new Date(a.fecha_de_publicacion_del) - new Date(b.fecha_de_publicacion_del)
       }
-      if (sortField === 'fecha_asc') {
-        return new Date(a.fecha_de_publicacion_del) - new Date(b.fecha_de_publicacion_del)
-      }
-      if (sortField === 'entidad_asc') {
-        return (a.entidad || '').localeCompare(b.entidad || '')
-      }
-      if (sortField === 'entidad_desc') {
-        return (b.entidad || '').localeCompare(a.entidad || '')
+      if (sortBy === 'entidad') {
+        return sortDir === 'asc'
+          ? (a.entidad || '').localeCompare(b.entidad || '')
+          : (b.entidad || '').localeCompare(a.entidad || '')
       }
       return 0
     })
   }
 
+  const handleSortToggle = (field) => {
+    if (sortBy === field) {
+      setSortDir((d) => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortDir('desc')
+    }
+    setCurrentPage(1)
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target
-    if (name === 'sort') {
-      setSortField(value)
-      if (searched) setCurrentPage(1)
-    } else {
-      setFilters((prev) => ({ ...prev, [name]: value }))
-    }
+    setFilters((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSearch = (e) => {
@@ -210,7 +209,6 @@ export default function ProcurementsPage() {
                 onChange={handleChange}
               />
             </div>
-
           </div>
 
           <div className="filter-actions">
@@ -237,22 +235,18 @@ export default function ProcurementsPage() {
               <div className="results-header">
                 <p className="results-count">{procurements.length} resultado{procurements.length !== 1 ? 's' : ''}</p>
                 <div className="sort-bar">
-                  <span className="sort-label">Ordenar por:</span>
-                  {sortOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      className={`sort-btn${sortField === opt.value ? ' sort-btn--active' : ''}`}
-                      onClick={() => {
-                        setSortField(opt.value)
-                        setCurrentPage(1)
-                      }}
-                    >
-                      {opt.label.replace(/\(.*\)/, '').trim()}
-                      {sortField === opt.value && (
-                        opt.value.includes('desc') ? ' ↓' : ' ↑'
-                      )}
-                    </button>
-                  ))}
+                  <button
+                    className={`sort-btn${sortBy === 'entidad' ? ' sort-btn--active' : ''}`}
+                    onClick={() => handleSortToggle('entidad')}
+                  >
+                    Entidad{sortBy === 'entidad' && getArrow()}
+                  </button>
+                  <button
+                    className={`sort-btn${sortBy === 'fecha' ? ' sort-btn--active' : ''}`}
+                    onClick={() => handleSortToggle('fecha')}
+                  >
+                    Fecha{sortBy === 'fecha' && getArrow()}
+                  </button>
                 </div>
               </div>
               <ul className="procurement-list">
