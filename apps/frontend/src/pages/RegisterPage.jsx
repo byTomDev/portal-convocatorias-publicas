@@ -86,7 +86,7 @@ export default function RegisterPage() {
       await register(email, password, confirmPassword)
       navigate('/login')
     } catch (err) {
-      if (err.response?.status === 400) {
+      if (err.response?.status === 409) {
         setError('Este correo ya está registrado.')
       } else {
         setError('Error al crear la cuenta. Intenta de nuevo.')
