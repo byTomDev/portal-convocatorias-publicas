@@ -83,7 +83,7 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      await register(email, password)
+      await register(email, password, confirmPassword)
       navigate('/login')
     } catch (err) {
       if (err.response?.status === 400) {
