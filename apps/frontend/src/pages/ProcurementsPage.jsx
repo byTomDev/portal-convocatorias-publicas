@@ -133,6 +133,13 @@ export default function ProcurementsPage() {
   const handleOpenDetail = (p) => setSelectedProcurement(p)
   const handleCloseDetail = () => setSelectedProcurement(null)
 
+  const formatCurrency = (val) => {
+    if (!val) return '—'
+    const num = parseFloat(val.toString().replace(/[^0-9.]/g, ''))
+    if (isNaN(num)) return '—'
+    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(num)
+  }
+
   return (
     <div className="page" style={{ padding: 0 }}>
       <header className="header-bar">
@@ -305,7 +312,7 @@ export default function ProcurementsPage() {
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Estado</span>
-                <span className="status-badge">{selectedProcurement.estado_del_procedimiento}</span>
+                <span className="modal-field-value">{selectedProcurement.estado_del_procedimiento}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Fecha de publicación</span>
@@ -319,7 +326,7 @@ export default function ProcurementsPage() {
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Precio base</span>
-                <span className="modal-field-value">{selectedProcurement.precio_base || '—'}</span>
+                <span className="modal-field-value">{formatCurrency(selectedProcurement.precio_base)}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Tipo de contrato</span>
