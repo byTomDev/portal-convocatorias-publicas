@@ -148,7 +148,11 @@ export default function ProcurementsPage() {
   const handleSaveFavorite = () => {
     const id = selectedProcurement.id_del_proceso
     setSaveState('saving')
-    saveBookmark(selectedProcurement)
+    const toSave = {
+      ...selectedProcurement,
+      url_proceso: selectedProcurement.urlproceso?.url || null,
+    }
+    saveBookmark(toSave)
       .then(() => {
         setSavedIds((prev) => new Set([...prev, id]))
         setSaveState('saved')
