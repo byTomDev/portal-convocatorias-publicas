@@ -203,12 +203,12 @@ button.btn-outline:hover:not(:disabled) {
 }
 
 /* Override for dark header context where btn-outline sits on primary bg */
-.header-nav button.btn-outline {
+.header-user button.btn-outline {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.7);
 }
 
-.header-nav button.btn-outline:hover:not(:disabled) {
+.header-user button.btn-outline:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.15);
   border-color: #ffffff;
 }
