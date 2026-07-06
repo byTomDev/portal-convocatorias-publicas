@@ -14,7 +14,7 @@ router = APIRouter(prefix="/bookmarks", tags=["bookmarks"])
 
 
 class CreateBookmarkRequest(BaseModel):
-    procurement_id: str
+    procurement_data: ProcurementData
 
 
 class BookmarkResponse(BaseModel):
@@ -32,13 +32,34 @@ async def create_bookmark(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # 1. Buscar procurement por external_process_id; crear si no existe
+    external_id = data.procurement_data.id_del_proceso
     result = await db.execute(
-        select(Procurement).where(Procurement.id == data.procurement_id)
+        select(Procurement).where(Procurement.external_process_id == external_id)
     )
     procurement = result.scalar_one_or_none()
-    if procurement is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Procurement not found")
 
+    if procurement is None:
+        procurement = Procurement(
+            external_process_id=external_id,
+            referencia_del_proceso=data.procurement_data.referencia_del_proceso,
+            entidad=data.procurement_data.entidad,
+            nombre_del_procedimiento=data.procurement_data.nombre_del_procedimiento,
+            modalidad_de_contratacion=data.procurement_data.modalidad_de_contratacion,
+            tipo_de_contrato=data.procurement_data.tipo_de_contrato,
+            precio_base=data.procurement_data.precio_base,
+            estado_del_procedimiento=data.procurement_data.estado_del_procedimiento,
+            fase=data.procurement_data.fase,
+            adjudicado=data.procurement_data.adjudicado,
+            fecha_de_publicacion_del=data.procurement_data.fecha_de_publicacion_del,
+            departamento_entidad=data.procurement_data.departamento_entidad,
+            ciudad_entidad=data.procurement_data.ciudad_entidad,
+            url_proceso=data.procurement_data.url_proceso,
+        )
+        db.add(procurement)
+        await db.flush()  # Obtener el ID generado sin cerrar la transacción
+
+    # 2. Verificar si el usuario ya tiene este procurement guardado
     result = await db.execute(
         select(Bookmark).where(
             Bookmark.user_id == user.id,
@@ -49,6 +70,7 @@ async def create_bookmark(
     if existing is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Bookmark already exists")
 
+    # 3. Crear la relación user↔procurement
     bookmark = Bookmark(user_id=user.id, procurement_id=procurement.id)
     db.add(bookmark)
     await db.commit()
