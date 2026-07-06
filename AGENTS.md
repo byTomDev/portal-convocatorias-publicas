@@ -257,9 +257,10 @@ Responsabilidades por módulo:
 5. Las contraseñas se almacenan cifradas.
 6. El login valida correo y contraseña.
 7. El login genera un JWT cuando las credenciales son correctas.
-8. Las rutas privadas requieren JWT válido.
-9. El backend identifica al usuario autenticado desde el token.
-10. El frontend no accede a rutas privadas sin token válido.
+8. El token JWT expira en 30 minutos por defecto (configurable via `ACCESS_TOKEN_EXPIRE_MINUTES`).
+9. Las rutas privadas requieren JWT válido.
+10. El backend identifica al usuario autenticado desde el token.
+11. El frontend no accede a rutas privadas sin token válido.
 
 ---
 
@@ -577,7 +578,7 @@ Reglas:
 1. Si la respuesta contiene datos, el backend debe transformarlos al formato interno.
 2. Si la respuesta es un arreglo vacío, el backend debe devolver una lista vacía.
 3. Una lista vacía no debe tratarse como error técnico.
-4. Si datos.gov.co no responde, el backend debe devolver un error controlado.
+4. Si datos.gov.co no responde o responde con error (código distinto de 200), el backend devuelve HTTP 502 y el frontend muestra mensaje amigable.
 5. Si datos.gov.co responde con error, el backend debe devolver un mensaje consistente al frontend.
 6. El backend no debe exponer trazas internas al frontend.
 7. El backend debe usar códigos HTTP apropiados.

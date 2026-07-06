@@ -64,7 +64,7 @@ docker compose exec backend python -m pytest tests/ -v
 | `POST /auth/register` | POST | 5 |
 | `POST /auth/login` | POST | 4 |
 | `GET /auth/me` | GET | 3 |
-| `GET /procurements` | GET | 4 |
+| `GET /procurements` | GET | 6 |
 | `POST /bookmarks` | POST | 2 |
 | `GET /bookmarks` | GET | 1 |
 | `DELETE /bookmarks/{id}` | DELETE | 1 |
