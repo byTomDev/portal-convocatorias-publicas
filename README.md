@@ -38,7 +38,7 @@ portal-convocatorias-publicas/
 │   │   ├── app/
 │   │   │   ├── core/       # Config y seguridad
 │   │   │   ├── database/   # Modelos y sesión
-│   │   │   ├── modules/    # Dominios (auth, users, bookmarks, procurements)
+│   │   │   ├── modules/    # Dominios (auth, bookmarks, procurements)
 │   │   │   └── shared/     # Excepciones compartidas
 │   │   └── tests/          # Pruebas de integración
 │   └── frontend/    # Aplicación React
@@ -53,13 +53,43 @@ portal-convocatorias-publicas/
 Las pruebas son de integración con `httpx.AsyncClient` contra la app FastAPI real, usando SQLite en memoria para isolation.
 
 ```bash
-# Dentro del contenedor backend
 docker compose exec backend python -m pytest tests/ -v
 ```
 
 **Cobertura actual:**
 
-| Endpoint | Tests |
-|----------|-------|
-| `GET /health` | 1 |
-| `POST /auth/register` | 5 |
+| Endpoint | Método | Tests |
+|----------|--------|-------|
+| `GET /health` | GET | 1 |
+| `POST /auth/register` | POST | 5 |
+| `POST /auth/login` | POST | 4 |
+| `GET /auth/me` | GET | 3 |
+| `GET /procurements` | GET | 4 |
+| `POST /bookmarks` | POST | 2 |
+| `GET /bookmarks` | GET | 1 |
+| `DELETE /bookmarks/{id}` | DELETE | 1 |
+| **Total** | | **25** |
+
+## Endpoints de la API
+
+### Autenticación
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| POST | `/auth/register` | No | Registrar usuario |
+| POST | `/auth/login` | No | Iniciar sesión |
+| GET | `/auth/me` | JWT | Datos del usuario autenticado |
+
+### Convocatorias
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/procurements` | JWT | Consultar convocatorias desde datos.gov.co con filtros y paginación |
+
+### Favoritos
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/bookmarks` | JWT | Listar favoritos del usuario |
+| POST | `/bookmarks` | JWT | Guardar favorita (crea/reutiliza procurement + relación) |
+| DELETE | `/bookmarks/{id}` | JWT | Eliminar favorita |

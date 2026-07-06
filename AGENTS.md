@@ -236,16 +236,14 @@ Módulos iniciales:
 
 ```txt
 auth
-users
 procurements
 bookmarks
 ```
 
 Responsabilidades por módulo:
 
-- `auth`: registro, login, hash de contraseñas, generación y validación de JWT, protección de rutas privadas.
-- `users`: modelo de usuario, consulta del usuario autenticado y operaciones internas relacionadas con usuarios.
-- `procurements`: consulta de convocatorias desde datos.gov.co, filtros, paginación, transformación de respuestas y manejo de errores externos.
+- `auth`: registro, login, hash de contraseñas, generación y validación de JWT, protección de rutas privadas, `/auth/me`.
+- `procurements`: consulta de convocatorias desde datos.gov.co, filtros, paginación, transformación de respuestas y manejo de errores externos. Requiere JWT.
 - `bookmarks`: guardar, listar y eliminar favoritos, evitar duplicados y validar propiedad del favorito.
 
 ---
@@ -269,10 +267,11 @@ Responsabilidades por módulo:
 
 PostgreSQL debe almacenar únicamente datos propios del sistema.
 
-Entidades iniciales:
+Entidades:
 
 ```txt
 users
+procurements
 bookmarks
 ```
 
@@ -288,7 +287,7 @@ Datos de favoritos:
 
 - Identificador único.
 - Identificador del usuario propietario.
-- Identificador o referencia del proceso externo.
+- Identificador o referencia del proceso externo (apunta a `procurements`).
 - Entidad.
 - Nombre del procedimiento.
 - Fecha de publicación.
@@ -303,9 +302,11 @@ Reglas:
 1. No se deben almacenar todas las convocatorias externas.
 2. Solo se guarda información básica cuando una convocatoria se marca como favorita.
 3. Cada favorito pertenece a un usuario autenticado.
-4. Un usuario no puede duplicar el mismo favorito.
+4. Un usuario no puede duplicar el mismo favorito (mismo `external_process_id`).
 5. Un usuario no puede consultar favoritos de otro usuario.
 6. Un usuario no puede eliminar favoritos de otro usuario.
+7. `procurements` es una tabla propia; se crea o reutiliza desde `POST /bookmarks`.
+8. `bookmarks` es la relación `user ↔ procurement`; no duplica campos del proceso.
 
 ---
 
@@ -598,18 +599,25 @@ Errores a contemplar:
 
 Los favoritos permiten al usuario guardar convocatorias para revisarlas posteriormente.
 
-Campos recomendados para persistir:
+Flujo: `POST /bookmarks` recibe `procurement_data` con los datos de la convocatoria, crea o reutiliza el registro en `procurements` (por `id_del_proceso`), y luego crea la relación `bookmark` con el usuario autenticado — todo en una operación atómica.
+
+Campos del procurement (persistidos via `procurement_data` en `POST /bookmarks`):
 
 ```txt
-external_id
-entity
-procedure_name
-publication_date
-procedure_status
-base_price
-contracting_modality
-opening_status
-process_url
+id_del_proceso                 → external_process_id
+referencia_del_proceso
+entidad
+nombre_del_procedimiento
+modalidad_de_contratacion
+tipo_de_contrato
+precio_base
+estado_del_procedimiento
+fase
+adjudicado
+fecha_de_publicacion_del
+departamento_entidad
+ciudad_entidad
+url_proceso
 ```
 
 Reglas:
