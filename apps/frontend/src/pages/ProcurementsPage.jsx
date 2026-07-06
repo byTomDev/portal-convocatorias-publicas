@@ -375,7 +375,7 @@ export default function ProcurementsPage() {
                 onClick={handleSaveFavorite}
                 disabled={saveState === 'saving' || saveState === 'saved' || saveState === 'already'}
               >
-                {saveState === 'saving' ? 'Guardando...' : saveState === 'saved' ? '✓ Guardado' : saveState === 'already' ? 'Ya está en favoritos' : 'Guardar favorito'}
+                {saveState === 'saving' ? 'Guardando...' : saveState === 'saved' || saveState === 'already' ? 'Ya está en favoritos' : 'Guardar favorito'}
               </button>
               <button className="btn-secondary" onClick={handleCloseDetail}>Cerrar</button>
             </div>
