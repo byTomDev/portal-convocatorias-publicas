@@ -23,7 +23,7 @@ export const register = (email, password, confirmPassword) =>
 
 export const getMe = () => api.get('/auth/me').then((r) => r.data)
 
-export const getProcurements = (limit, offset) =>
-  api.get('/procurements', { params: { limit, offset } }).then((r) => r.data)
+export const getProcurements = ({ entity, status, start_date, end_date, limit, offset } = {}) =>
+  api.get('/procurements', { params: { entity, status, start_date, end_date, limit, offset } }).then((r) => r.data)
 
 export default api

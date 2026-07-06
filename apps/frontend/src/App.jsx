@@ -6,6 +6,7 @@ import PrivateRoute from './components/PrivateRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import HomePage from './pages/HomePage'
+import ProcurementsPage from './pages/ProcurementsPage'
 
 function App() {
   return (
@@ -19,6 +20,14 @@ function App() {
             element={
               <PrivateRoute>
                 <HomePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/procurements"
+            element={
+              <PrivateRoute>
+                <ProcurementsPage />
               </PrivateRoute>
             }
           />

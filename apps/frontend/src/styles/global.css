@@ -294,4 +294,84 @@ button.btn-outline:hover:not(:disabled) {
   gap: 1rem;
   font-size: 0.8125rem;
   color: var(--color-text-muted);
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+/* ─── Page header ─── */
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  margin-top: 0.5rem;
+}
+
+.back-link {
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* ─── Filters form ─── */
+.filters-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-field label {
+  margin-bottom: 0.25rem;
+}
+
+.filter-field input,
+.filter-field select {
+  font-family: inherit;
+  font-size: 0.9375rem;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.15s ease;
+}
+
+.filter-field input:focus,
+.filter-field select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.results-count {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
 }
