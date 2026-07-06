@@ -192,9 +192,10 @@ export default function ProcurementsPage() {
 
       <main className="main-content">
         <div className="page-header">
-          <Link to="/home" className="back-link">
-            ← Volver al inicio
-          </Link>
+          <div className="page-header-nav">
+            <Link to="/home" className="back-link">← Volver al inicio</Link>
+            <Link to="/bookmarks" className="btn-outline">Favoritos</Link>
+          </div>
           <h1>Buscar convocatorias</h1>
         </div>
 

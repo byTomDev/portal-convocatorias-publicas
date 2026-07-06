@@ -314,6 +314,12 @@ button.btn-outline:hover:not(:disabled) {
   margin-top: 0.5rem;
 }
 
+.page-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .back-link {
   font-size: 0.875rem;
   color: var(--color-primary);
