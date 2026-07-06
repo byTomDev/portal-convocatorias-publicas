@@ -211,21 +211,6 @@ export default function ProcurementsPage() {
               />
             </div>
 
-            <div className="filter-field">
-              <label htmlFor="sort">Ordenar por</label>
-              <select
-                id="sort"
-                name="sort"
-                value={sortField}
-                onChange={handleChange}
-              >
-                {sortOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
 
           <div className="filter-actions">
@@ -249,7 +234,27 @@ export default function ProcurementsPage() {
 
           {!loading && !error && procurements.length > 0 && (
             <>
-              <p className="results-count">{procurements.length} resultado{procurements.length !== 1 ? 's' : ''}</p>
+              <div className="results-header">
+                <p className="results-count">{procurements.length} resultado{procurements.length !== 1 ? 's' : ''}</p>
+                <div className="sort-bar">
+                  <span className="sort-label">Ordenar por:</span>
+                  {sortOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      className={`sort-btn${sortField === opt.value ? ' sort-btn--active' : ''}`}
+                      onClick={() => {
+                        setSortField(opt.value)
+                        setCurrentPage(1)
+                      }}
+                    >
+                      {opt.label.replace(/\(.*\)/, '').trim()}
+                      {sortField === opt.value && (
+                        opt.value.includes('desc') ? ' ↓' : ' ↑'
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <ul className="procurement-list">
                 {procurements.map((p) => (
                   <li key={p.id_del_proceso} className="procurement-item">
