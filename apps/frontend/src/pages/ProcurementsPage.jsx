@@ -19,6 +19,7 @@ export default function ProcurementsPage() {
   const [sortDir, setSortDir] = useState('desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [hasNext, setHasNext] = useState(false)
+  const [selectedProcurement, setSelectedProcurement] = useState(null)
 
   useEffect(() => {
     if (procurements.length > 0) {
@@ -128,6 +129,9 @@ export default function ProcurementsPage() {
   const handleNext = () => {
     fetchPage(currentPage + 1)
   }
+
+  const handleOpenDetail = (p) => setSelectedProcurement(p)
+  const handleCloseDetail = () => setSelectedProcurement(null)
 
   return (
     <div className="page" style={{ padding: 0 }}>
@@ -255,7 +259,7 @@ export default function ProcurementsPage() {
               </div>
               <ul className="procurement-list">
                 {procurements.map((p) => (
-                  <li key={p.id_del_proceso} className="procurement-item">
+                  <li key={p.id_del_proceso} className="procurement-item" onClick={() => handleOpenDetail(p)}>
                     <div className="procurement-name">{p.nombre_del_procedimiento}</div>
                     <div className="procurement-meta">
                       <span>{p.entidad}</span>
@@ -289,6 +293,58 @@ export default function ProcurementsPage() {
           )}
         </section>
       </main>
+
+      {selectedProcurement && (
+        <div className="modal-overlay" onClick={handleCloseDetail}>
+          <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">{selectedProcurement.nombre_del_procedimiento}</h2>
+            <div className="modal-fields">
+              <div className="modal-field">
+                <span className="modal-field-label">Entidad</span>
+                <span className="modal-field-value">{selectedProcurement.entidad || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Estado</span>
+                <span className="status-badge">{selectedProcurement.estado_del_procedimiento}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Fecha de publicación</span>
+                <span className="modal-field-value">
+                  {selectedProcurement.fecha_de_publicacion_del?.split('T')[0] || '—'}
+                </span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Modalidad</span>
+                <span className="modal-field-value">{selectedProcurement.modalidad_de_contratacion || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Precio base</span>
+                <span className="modal-field-value">{selectedProcurement.precio_base || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Tipo de contrato</span>
+                <span className="modal-field-value">{selectedProcurement.tipo_de_contrato || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Departamento</span>
+                <span className="modal-field-value">{selectedProcurement.departamento_entidad || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">Ciudad</span>
+                <span className="modal-field-value">{selectedProcurement.ciudad_entidad || '—'}</span>
+              </div>
+              <div className="modal-field">
+                <span className="modal-field-label">ID del proceso</span>
+                <span className="modal-field-value">{selectedProcurement.id_del_proceso || '—'}</span>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="btn-primary" disabled>Guardar favorito</button>
+              <button className="btn-secondary" onClick={handleCloseDetail}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
