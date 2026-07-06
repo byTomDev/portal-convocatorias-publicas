@@ -213,6 +213,38 @@ button.btn-outline:hover:not(:disabled) {
   border-color: #ffffff;
 }
 
+.header-brand a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-nav a.btn-outline {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.header-nav a.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+}
+
+.header-nav a.btn-primary {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.header-nav a.btn-primary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
+}
+
 /* ─── Main content ─── */
 .main-content {
   max-width: 960px;

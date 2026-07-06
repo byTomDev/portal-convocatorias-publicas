@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { getBookmarks } from '../api/client'
 
 const formatCurrency = (val) => {
@@ -8,6 +9,7 @@ const formatCurrency = (val) => {
 }
 
 export default function BookmarksPage() {
+  const { user, logout } = useAuth()
   const [allBookmarks, setAllBookmarks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -35,7 +37,7 @@ export default function BookmarksPage() {
   const handleClose = () => setSelected(null)
 
   return (
-    <div className="page">
+    <div className="page" style={{ padding: 0 }}>
       <header className="header-bar">
         <div className="header-content">
           <div className="header-brand">
@@ -47,10 +49,12 @@ export default function BookmarksPage() {
               <span>Portal de Convocatorias</span>
             </Link>
           </div>
-          <nav className="header-nav">
-            <Link to="/home" className="btn-primary">Regresar a inicio</Link>
-            <Link to="/procurements" className="btn-outline">Buscar</Link>
-          </nav>
+          <div className="header-user">
+            <span className="header-email">{user?.email}</span>
+            <button className="btn-outline" onClick={logout}>
+              Cerrar sesión
+            </button>
+          </div>
         </div>
       </header>
 
