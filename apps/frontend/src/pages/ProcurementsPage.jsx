@@ -15,12 +15,43 @@ export default function ProcurementsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
+  const [sortField, setSortField] = useState('fecha_desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [hasNext, setHasNext] = useState(false)
 
+  const sortOptions = [
+    { value: 'fecha_desc', label: 'Fecha (recientes)' },
+    { value: 'fecha_asc', label: 'Fecha (antiguos)' },
+    { value: 'entidad_asc', label: 'Entidad (A-Z)' },
+    { value: 'entidad_desc', label: 'Entidad (Z-A)' },
+  ]
+
+  const applySort = (data) => {
+    return [...data].sort((a, b) => {
+      if (sortField === 'fecha_desc') {
+        return new Date(b.fecha_de_publicacion_del) - new Date(a.fecha_de_publicacion_del)
+      }
+      if (sortField === 'fecha_asc') {
+        return new Date(a.fecha_de_publicacion_del) - new Date(b.fecha_de_publicacion_del)
+      }
+      if (sortField === 'entidad_asc') {
+        return (a.entidad || '').localeCompare(b.entidad || '')
+      }
+      if (sortField === 'entidad_desc') {
+        return (b.entidad || '').localeCompare(a.entidad || '')
+      }
+      return 0
+    })
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFilters((prev) => ({ ...prev, [name]: value }))
+    if (name === 'sort') {
+      setSortField(value)
+      if (searched) setCurrentPage(1)
+    } else {
+      setFilters((prev) => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleSearch = (e) => {
@@ -41,7 +72,7 @@ export default function ProcurementsPage() {
 
     getProcurements(params)
       .then((data) => {
-        setProcurements(data)
+        setProcurements(applySort(data))
         setHasNext(data.length === 10)
       })
       .catch(() => {
@@ -75,7 +106,7 @@ export default function ProcurementsPage() {
 
     getProcurements(params)
       .then((data) => {
-        setProcurements(data)
+        setProcurements(applySort(data))
         setCurrentPage(page)
         setHasNext(data.length === 10)
       })
@@ -178,6 +209,22 @@ export default function ProcurementsPage() {
                 value={filters.end_date}
                 onChange={handleChange}
               />
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="sort">Ordenar por</label>
+              <select
+                id="sort"
+                name="sort"
+                value={sortField}
+                onChange={handleChange}
+              >
+                {sortOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
