@@ -2,7 +2,7 @@ import httpx
 from fastapi import APIRouter, Depends, Query
 
 from app.core.config import settings
-from app.modules.auth import get_db
+from app.modules.auth import get_current_user, get_db
 
 router = APIRouter(prefix="/procurements", tags=["procurements"])
 
@@ -15,6 +15,7 @@ async def list_procurements(
     status: str = Query(default=""),
     start_date: str = Query(default=""),
     end_date: str = Query(default=""),
+    _: None = Depends(get_current_user),
 ):
     params = {
         "$limit": limit,
