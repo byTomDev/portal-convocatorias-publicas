@@ -20,7 +20,8 @@ export default function ProcurementsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [hasNext, setHasNext] = useState(false)
   const [selectedProcurement, setSelectedProcurement] = useState(null)
-  const [saveState, setSaveState] = useState('idle') // idle | saving | saved | already | error
+  const [saveState, setSaveState] = useState('idle') // toast only: idle | saving | saved | already | error
+  const [savedIds, setSavedIds] = useState(new Set()) // persistent bookmarks by external id
 
   useEffect(() => {
     if (procurements.length > 0) {
@@ -145,11 +146,16 @@ export default function ProcurementsPage() {
   }, [saveState])
 
   const handleSaveFavorite = () => {
+    const id = selectedProcurement.id_del_proceso
     setSaveState('saving')
     saveBookmark(selectedProcurement)
-      .then(() => setSaveState('saved'))
+      .then(() => {
+        setSavedIds((prev) => new Set([...prev, id]))
+        setSaveState('saved')
+      })
       .catch((err) => {
         if (err?.response?.status === 409) {
+          setSavedIds((prev) => new Set([...prev, id]))
           setSaveState('already')
         } else {
           setSaveState('error')
@@ -373,9 +379,9 @@ export default function ProcurementsPage() {
               <button
                 className="btn-primary"
                 onClick={handleSaveFavorite}
-                disabled={saveState === 'saving' || saveState === 'saved' || saveState === 'already'}
+                disabled={saveState === 'saving' || savedIds.has(selectedProcurement?.id_del_proceso)}
               >
-                {saveState === 'saving' ? 'Guardando...' : saveState === 'saved' || saveState === 'already' ? 'Ya está en favoritos' : 'Guardar favorito'}
+                {savedIds.has(selectedProcurement?.id_del_proceso) ? 'Ya está en favoritos' : saveState === 'saving' ? 'Guardando...' : 'Guardar favorito'}
               </button>
               <button className="btn-secondary" onClick={handleCloseDetail}>Cerrar</button>
             </div>
