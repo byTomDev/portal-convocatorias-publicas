@@ -83,6 +83,15 @@ button.btn-secondary:hover:not(:disabled) {
   border-color: var(--color-primary);
 }
 
+button.btn-danger {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+button.btn-danger:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
 /* ─── Formularios ─── */
 input[type="text"],
 input[type="email"],
@@ -549,6 +558,12 @@ button.btn-outline:hover:not(:disabled) {
 .modal-field-value {
   font-size: 0.9375rem;
   color: var(--color-text);
+}
+
+.modal-field-link {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
 }
 
 .modal-actions {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getBookmarks } from '../api/client'
+import { getBookmarks, deleteBookmark } from '../api/client'
 
 const formatCurrency = (val) => {
   if (!val) return '—'
@@ -15,6 +15,8 @@ export default function BookmarksPage() {
   const [error, setError] = useState('')
   const [selected, setSelected] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [deletingId, setDeletingId] = useState(null)
+  const [toast, setToast] = useState(null)
   const PAGE_SIZE = 10
 
   useEffect(() => {
@@ -33,8 +35,24 @@ export default function BookmarksPage() {
   const safePage = Math.min(currentPage, totalPages)
   const bookmarks = allBookmarks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
-  const handleOpen = (b) => setSelected(b.procurement)
+  const handleOpen = (b) => setSelected(b)
   const handleClose = () => setSelected(null)
+
+  const handleDelete = async (b) => {
+    setDeletingId(b.id)
+    try {
+      await deleteBookmark(b.id)
+      setAllBookmarks((prev) => prev.filter((item) => item.id !== b.id))
+      setSelected(null)
+      setToast({ type: 'success', message: 'Eliminado de favoritos' })
+      setTimeout(() => setToast(null), 3000)
+    } catch {
+      setToast({ type: 'error', message: 'No se pudo eliminar. Intenta de nuevo.' })
+      setTimeout(() => setToast(null), 3000)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div className="page" style={{ padding: 0 }}>
@@ -134,70 +152,85 @@ export default function BookmarksPage() {
         )}
       </main>
 
+      {toast && (
+        <div className={`toast toast--${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
+
       {selected && (
         <div className="modal-overlay" onClick={handleClose}>
           <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
-            <h2 className="modal-title">{selected.nombre_del_procedimiento || 'Detalle de convocatoria'}</h2>
+            <h2 className="modal-title">{selected.procurement?.nombre_del_procedimiento || 'Detalle de convocatoria'}</h2>
             <div className="modal-fields">
               <div className="modal-field">
                 <span className="modal-field-label">Entidad</span>
-                <span className="modal-field-value">{selected.entidad || '—'}</span>
+                <span className="modal-field-value">{selected.procurement?.entidad || '—'}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Referencia</span>
-                <span className="modal-field-value">{selected.referencia_del_proceso || '—'}</span>
+                <span className="modal-field-value">{selected.procurement?.referencia_del_proceso || '—'}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Estado</span>
-                <span className="modal-field-value">{selected.estado_del_procedimiento || '—'}</span>
+                <span className="modal-field-value">{selected.procurement?.estado_del_procedimiento || '—'}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Fecha de publicación</span>
                 <span className="modal-field-value">
-                  {selected.fecha_de_publicacion_del?.split('T')[0] || '—'}
+                  {selected.procurement?.fecha_de_publicacion_del?.split('T')[0] || '—'}
                 </span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Modalidad</span>
-                <span className="modal-field-value">{selected.modalidad_de_contratacion || '—'}</span>
+                <span className="modal-field-value">{selected.procurement?.modalidad_de_contratacion || '—'}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Precio base</span>
-                <span className="modal-field-value">{formatCurrency(selected.precio_base)}</span>
+                <span className="modal-field-value">{formatCurrency(selected.procurement?.precio_base)}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Tipo de contrato</span>
-                <span className="modal-field-value">{selected.tipo_de_contrato || '—'}</span>
+                <span className="modal-field-value">{selected.procurement?.tipo_de_contrato || '—'}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Departamento</span>
-                <span className="modal-field-value">{selected.departamento_entidad || '—'}</span>
+                <span className="modal-field-value">{selected.procurement?.departamento_entidad || '—'}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">Ciudad</span>
-                <span className="modal-field-value">{selected.ciudad_entidad || '—'}</span>
+                <span className="modal-field-value">{selected.procurement?.ciudad_entidad || '—'}</span>
               </div>
               <div className="modal-field">
                 <span className="modal-field-label">ID del proceso</span>
-                <span className="modal-field-value">{selected.id_del_proceso || '—'}</span>
+                <span className="modal-field-value">{selected.procurement?.id_del_proceso || '—'}</span>
               </div>
+              {selected.procurement?.url_proceso && (
+                <div className="modal-field-link">
+                  <a
+                    href={selected.procurement.url_proceso}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-outline"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline',verticalAlign:'middle',marginRight:'6px'}}>
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                      <polyline points="15 3 21 3 21 9"/>
+                      <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    Revisar proceso en datos.gov.co
+                  </a>
+                </div>
+              )}
             </div>
             <div className="modal-actions">
-              {selected.url_proceso && (
-                <a
-                  href={selected.url_proceso}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline',verticalAlign:'middle',marginRight:'6px'}}>
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/>
-                    <line x1="10" y1="14" x2="21" y2="3"/>
-                  </svg>
-                  Revisar proceso
-                </a>
-              )}
+              <button
+                className="btn-danger"
+                onClick={() => handleDelete(selected)}
+                disabled={deletingId !== null}
+              >
+                {deletingId ? 'Eliminando...' : 'Eliminar de favoritos'}
+              </button>
               <button className="btn-secondary" onClick={handleClose}>Cerrar</button>
             </div>
           </div>
