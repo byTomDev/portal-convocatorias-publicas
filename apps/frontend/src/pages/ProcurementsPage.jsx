@@ -13,8 +13,10 @@ export default function ProcurementsPage() {
   })
   const [procurements, setProcurements] = useState([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -26,6 +28,7 @@ export default function ProcurementsPage() {
     setError('')
     setSearched(true)
     setLoading(true)
+    setHasMore(true)
 
     const params = {
       limit: 10,
@@ -39,6 +42,7 @@ export default function ProcurementsPage() {
     getProcurements(params)
       .then((data) => {
         setProcurements(data)
+        setHasMore(data.length === 10)
       })
       .catch(() => {
         setError('No se pudieron cargar las convocatorias. Intenta de nuevo.')
@@ -54,6 +58,33 @@ export default function ProcurementsPage() {
     setProcurements([])
     setError('')
     setSearched(false)
+    setHasMore(true)
+  }
+
+  const handleLoadMore = () => {
+    setLoadingMore(true)
+    const currentOffset = procurements.length
+
+    const params = {
+      limit: 10,
+      offset: currentOffset,
+    }
+    if (filters.entity) params.entity = filters.entity
+    if (filters.status) params.status = filters.status
+    if (filters.start_date) params.start_date = filters.start_date
+    if (filters.end_date) params.end_date = filters.end_date
+
+    getProcurements(params)
+      .then((data) => {
+        setProcurements((prev) => [...prev, ...data])
+        setHasMore(data.length === 10)
+      })
+      .catch(() => {
+        setError('No se pudieron cargar más convocatorias.')
+      })
+      .finally(() => {
+        setLoadingMore(false)
+      })
   }
 
   return (
@@ -176,6 +207,22 @@ export default function ProcurementsPage() {
                   </li>
                 ))}
               </ul>
+
+              {hasMore ? (
+                <div className="load-more-container">
+                  <button
+                    className="btn-secondary"
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? 'Cargando...' : 'Cargar más'}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-muted text-center no-more-results">
+                  No hay más resultados
+                </p>
+              )}
             </>
           )}
         </section>

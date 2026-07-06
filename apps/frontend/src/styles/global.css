@@ -370,6 +370,16 @@ button.btn-outline:hover:not(:disabled) {
   justify-content: flex-end;
 }
 
+.load-more-container {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.no-more-results {
+  margin-top: 1rem;
+}
+
 .results-count {
   font-size: 0.875rem;
   color: var(--color-text-muted);
