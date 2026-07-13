@@ -29,7 +29,8 @@ export const getProcurements = ({ entity, status, start_date, end_date, limit, o
 export const saveBookmark = (procurementData) =>
   api.post('/bookmarks', { procurement_data: procurementData }).then((r) => r.data)
 
-export const getBookmarks = () => api.get('/bookmarks').then((r) => r.data)
+export const getBookmarks = ({ entity, status, start_date, end_date, limit, offset } = {}) =>
+  api.get('/bookmarks', { params: { entity, status, start_date, end_date, limit, offset } }).then((r) => r.data)
 
 export const deleteBookmark = (id) => api.delete(`/bookmarks/${id}`).then((r) => r.data)
 

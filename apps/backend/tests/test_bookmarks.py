@@ -133,3 +133,146 @@ async def test_create_bookmark_reuses_existing_procurement(client, user_token):
 
     # Verify the procurement_id returned is the same (procurement was reused)
     assert bookmark1["procurement_id"] == procurement_id
+
+
+# --- Filter tests ---
+
+
+@pytest.mark.asyncio
+async def test_list_bookmarks_with_entity_filter(client, user_token):
+    """Filter by entity returns only matching bookmarks."""
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-ENTITY-1", "entidad": "DANE", "nombre_del_procedimiento": "GEIH"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-ENTITY-2", "entidad": "MINDEFENSA", "nombre_del_procedimiento": "Armas"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+
+    resp = await client.get("/bookmarks?entity=DANE", headers={"Authorization": f"Bearer {user_token}"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["procurement"]["entidad"] == "DANE"
+
+
+@pytest.mark.asyncio
+async def test_list_bookmarks_with_status_filter(client, user_token):
+    """Filter by status returns only matching bookmarks."""
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-STATUS-1", "estado_del_procedimiento": "Publicado"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-STATUS-2", "estado_del_procedimiento": "Cancelado"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+
+    resp = await client.get("/bookmarks?status=Publicado", headers={"Authorization": f"Bearer {user_token}"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["procurement"]["estado_del_procedimiento"] == "Publicado"
+
+
+@pytest.mark.asyncio
+async def test_list_bookmarks_with_date_range(client, user_token):
+    """Filter by date range returns bookmarks within that range."""
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-DATE-1", "fecha_de_publicacion_del": "2024-01-15T00:00:00"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-DATE-2", "fecha_de_publicacion_del": "2024-06-20T00:00:00"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+
+    resp = await client.get(
+        "/bookmarks?start_date=2024-01-01&end_date=2024-03-31",
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    assert "2024-01-15" in data[0]["procurement"]["fecha_de_publicacion_del"]
+
+
+@pytest.mark.asyncio
+async def test_list_bookmarks_combined_filters(client, user_token):
+    """Combining entity + status filters returns intersection."""
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-COMB-1", "entidad": "DANE", "estado_del_procedimiento": "Publicado"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-COMB-2", "entidad": "DANE", "estado_del_procedimiento": "Cancelado"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-COMB-3", "entidad": "MINDEFENSA", "estado_del_procedimiento": "Publicado"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+
+    resp = await client.get("/bookmarks?entity=DANE&status=Publicado", headers={"Authorization": f"Bearer {user_token}"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["procurement"]["entidad"] == "DANE"
+    assert data[0]["procurement"]["estado_del_procedimiento"] == "Publicado"
+
+
+@pytest.mark.asyncio
+async def test_list_bookmarks_pagination_limit_offset(client, user_token):
+    """Pagination via limit and offset works correctly."""
+    for i in range(5):
+        await client.post(
+            "/bookmarks",
+            json={"procurement_data": {"id_del_proceso": f"BK-PAG-{i}", "entidad": f"Entidad{i}"}},
+            headers={"Authorization": f"Bearer {user_token}"},
+        )
+
+    # First page
+    resp = await client.get("/bookmarks?limit=2&offset=0", headers={"Authorization": f"Bearer {user_token}"})
+    assert resp.status_code == 200
+    assert len(resp.json()) == 2
+
+    # Second page
+    resp = await client.get("/bookmarks?limit=2&offset=2", headers={"Authorization": f"Bearer {user_token}"})
+    assert resp.status_code == 200
+    assert len(resp.json()) == 2
+
+    # Beyond data
+    resp = await client.get("/bookmarks?limit=2&offset=4", headers={"Authorization": f"Bearer {user_token}"})
+    assert resp.status_code == 200
+    assert len(resp.json()) == 1
+
+
+@pytest.mark.asyncio
+async def test_list_bookmarks_no_results(client, user_token):
+    """Filter that matches nothing returns empty list."""
+    await client.post(
+        "/bookmarks",
+        json={"procurement_data": {"id_del_proceso": "BK-EMPTY-1", "entidad": "DANE"}},
+        headers={"Authorization": f"Bearer {user_token}"},
+    )
+
+    resp = await client.get("/bookmarks?entity=NONEXISTENT", headers={"Authorization": f"Bearer {user_token}"})
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+@pytest.mark.asyncio
+async def test_list_bookmarks_unauthenticated(client):
+    """Request without token returns 401."""
+    resp = await client.get("/bookmarks")
+    assert resp.status_code == 401

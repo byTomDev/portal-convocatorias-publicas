@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
-from sqlalchemy import select
+from sqlalchemy import and_, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -95,14 +95,42 @@ class BookmarkWithProcurementResponse(BaseModel):
 
 @router.get("", response_model=list[BookmarkWithProcurementResponse])
 async def list_bookmarks(
+    entity: str = Query(default=""),
+    status: str = Query(default=""),
+    start_date: str = Query(default=""),
+    end_date: str = Query(default=""),
+    limit: int = Query(default=10, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
+    stmt = (
         select(Bookmark)
+        .join(Bookmark.procurement)
         .where(Bookmark.user_id == user.id)
-        .options(selectinload(Bookmark.procurement))
     )
+
+    conditions = []
+
+    if entity:
+        conditions.append(Procurement.entidad.ilike(f"%{entity}%"))
+
+    if status:
+        conditions.append(Procurement.estado_del_procedimiento == status)
+
+    if start_date:
+        conditions.append(Procurement.fecha_de_publicacion_del >= start_date)
+
+    if end_date:
+        conditions.append(Procurement.fecha_de_publicacion_del <= f"{end_date}T23:59:59")
+
+    if conditions:
+        stmt = stmt.where(and_(*conditions))
+
+    stmt = stmt.options(selectinload(Bookmark.procurement))
+    stmt = stmt.limit(limit).offset(offset)
+
+    result = await db.execute(stmt)
     bookmarks = result.scalars().all()
 
     response = []

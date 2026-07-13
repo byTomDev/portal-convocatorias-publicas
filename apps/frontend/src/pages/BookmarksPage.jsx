@@ -10,30 +10,92 @@ const formatCurrency = (val) => {
 
 export default function BookmarksPage() {
   const { user, logout } = useAuth()
-  const [allBookmarks, setAllBookmarks] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState({
+    entity: '',
+    status: '',
+    start_date: '',
+    end_date: '',
+  })
+  const [bookmarks, setBookmarks] = useState([])
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [selected, setSelected] = useState(null)
+  const [searched, setSearched] = useState(false)
+  const [initialized, setInitialized] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [hasNext, setHasNext] = useState(false)
+  const [selected, setSelected] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
   const [toast, setToast] = useState(null)
-  const PAGE_SIZE = 10
 
-  useEffect(() => {
-    getBookmarks()
+  const LIMIT = 10
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFilters((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const buildParams = (page) => {
+    const params = { limit: LIMIT, offset: (page - 1) * LIMIT }
+    if (filters.entity) params.entity = filters.entity
+    if (filters.status) params.status = filters.status
+    if (filters.start_date) params.start_date = filters.start_date
+    if (filters.end_date) params.end_date = filters.end_date
+    return params
+  }
+
+  const fetchPage = (page) => {
+    setLoading(true)
+    getBookmarks(buildParams(page))
       .then((data) => {
-        setAllBookmarks(data)
-        setLoading(false)
+        setBookmarks(data)
+        setCurrentPage(page)
+        setHasNext(data.length === LIMIT)
+        setInitialized(true)
       })
       .catch(() => {
         setError('No se pudieron cargar los favoritos. Intenta de nuevo.')
+        setBookmarks([])
+      })
+      .finally(() => {
         setLoading(false)
       })
-  }, [])
+  }
 
-  const totalPages = Math.max(1, Math.ceil(allBookmarks.length / PAGE_SIZE))
-  const safePage = Math.min(currentPage, totalPages)
-  const bookmarks = allBookmarks.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const handleSearch = (e) => {
+    e.preventDefault()
+    setError('')
+    setSearched(true)
+    fetchPage(1)
+  }
+
+  const handleClear = () => {
+    setFilters({ entity: '', status: '', start_date: '', end_date: '' })
+    setError('')
+    setCurrentPage(1)
+    setHasNext(false)
+    // Llamada directa con params limpios — no depende de filters stale via closure
+    setLoading(true)
+    getBookmarks({ limit: LIMIT, offset: 0 })
+      .then((data) => {
+        setBookmarks(data)
+        setCurrentPage(1)
+        setHasNext(data.length === LIMIT)
+        setInitialized(true)
+      })
+      .catch(() => {
+        setError('No se pudieron cargar los favoritos. Intenta de nuevo.')
+        setBookmarks([])
+      })
+      .finally(() => setLoading(false))
+  }
+
+  const handlePrev = () => {
+    if (currentPage > 1) fetchPage(currentPage - 1)
+  }
+
+  const handleNext = () => {
+    fetchPage(currentPage + 1)
+  }
 
   const handleOpen = (b) => setSelected(b)
   const handleClose = () => setSelected(null)
@@ -42,10 +104,11 @@ export default function BookmarksPage() {
     setDeletingId(b.id)
     try {
       await deleteBookmark(b.id)
-      setAllBookmarks((prev) => prev.filter((item) => item.id !== b.id))
       setSelected(null)
       setToast({ type: 'success', message: 'Eliminado de favoritos' })
       setTimeout(() => setToast(null), 3000)
+      // Refrescar la página actual
+      fetchPage(currentPage)
     } catch {
       setToast({ type: 'error', message: 'No se pudo eliminar. Intenta de nuevo.' })
       setTimeout(() => setToast(null), 3000)
@@ -53,6 +116,19 @@ export default function BookmarksPage() {
       setDeletingId(null)
     }
   }
+
+  useEffect(() => {
+    setSearched(true)
+    fetchPage(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [toast])
 
   return (
     <div className="page" style={{ padding: 0 }}>
@@ -85,6 +161,74 @@ export default function BookmarksPage() {
           </div>
         </div>
 
+        <form className="filters-form" onSubmit={handleSearch}>
+          <div className="filter-row">
+            <div className="filter-field">
+              <label htmlFor="entity">Entidad</label>
+              <input
+                type="text"
+                id="entity"
+                name="entity"
+                placeholder="Ej: DANE"
+                value={filters.entity}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="status">Estado</label>
+              <select
+                id="status"
+                name="status"
+                value={filters.status}
+                onChange={handleChange}
+              >
+                <option value="">Todos</option>
+                <option value="Seleccionado">Seleccionado</option>
+                <option value="Publicado">Publicado</option>
+                <option value="Evaluación">Evaluación</option>
+                <option value="Cancelado">Cancelado</option>
+                <option value="Borrador">Borrador</option>
+                <option value="Abierto">Abierto</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="En aprobación">En aprobación</option>
+                <option value="Suspendido">Suspendido</option>
+              </select>
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="start_date">Fecha inicio</label>
+              <input
+                type="date"
+                id="start_date"
+                name="start_date"
+                value={filters.start_date}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="end_date">Fecha fin</label>
+              <input
+                type="date"
+                id="end_date"
+                name="end_date"
+                value={filters.end_date}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div className="filter-actions">
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? 'Buscando...' : 'Buscar'}
+            </button>
+            <button type="button" className="btn-secondary" onClick={handleClear}>
+              Limpiar
+            </button>
+          </div>
+        </form>
+
         {loading && (
           <div className="loading-state">
             <div className="spinner" />
@@ -98,7 +242,16 @@ export default function BookmarksPage() {
           </div>
         )}
 
-        {!loading && !error && bookmarks.length === 0 && (
+        {!loading && !error && searched && initialized && bookmarks.length === 0 && (
+          <div className="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <p>No se encontraron favoritos con esos filtros.</p>
+          </div>
+        )}
+
+        {!loading && !error && !initialized && bookmarks.length === 0 && (
           <div className="empty-state">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -111,7 +264,8 @@ export default function BookmarksPage() {
         {!loading && !error && bookmarks.length > 0 && (
           <div className="results-list-container">
             <p className="results-count">
-              Mostrando {bookmarks.length} de {allBookmarks.length} favorito{allBookmarks.length !== 1 ? 's' : ''} — Página {safePage} de {totalPages}
+              {bookmarks.length} favorito{bookmarks.length !== 1 ? 's' : ''}
+              {hasNext ? '+' : ''} — Página {currentPage}
             </p>
             <ul className="procurement-list">
               {bookmarks.map((b) => (
@@ -129,20 +283,20 @@ export default function BookmarksPage() {
                 </li>
               ))}
             </ul>
-            {totalPages > 1 && (
+            {(hasNext || currentPage > 1) && (
               <div className="pagination-bar">
                 <button
                   className="btn-outline"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1}
+                  onClick={handlePrev}
+                  disabled={loading || currentPage <= 1}
                 >
                   ← Anterior
                 </button>
-                <span className="pagination-info">Página {safePage} de {totalPages}</span>
+                <span className="pagination-info">Página {currentPage}</span>
                 <button
                   className="btn-outline"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage >= totalPages}
+                  onClick={handleNext}
+                  disabled={loading || !hasNext}
                 >
                   Siguiente →
                 </button>
